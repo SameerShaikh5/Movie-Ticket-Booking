@@ -30,7 +30,8 @@ app.use(helmet())
 
 app.use(
     cors({
-        origin: process.env.FRONTEND_URL, // Exact frontend URL (no trailing slash)
+        origin: process.env.FRONTEND_URL,
+         // Exact frontend URL (no trailing slash)
         credentials: true,             // Required for cookies to be accepted by browser
     })
 )
