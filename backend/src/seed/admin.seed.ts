@@ -1,54 +1,43 @@
-import dotenv from "dotenv"
-import mongoose from "mongoose";
 import { User } from "../models/user.model.js";
 
+export const seedAdmin = async () => {
+    const { ADMIN_EMAIL, ADMIN_PASSWORD, ADMIN_NAME } = process.env;
 
-
-dotenv.config()
-
-const seedAdmin = async () => {
-    const { MONGO_URI, ADMIN_EMAIL, ADMIN_PASSWORD } = process.env;
-
-    if (!MONGO_URI || !ADMIN_EMAIL || !ADMIN_PASSWORD) {
-        throw new Error("Missing admin seed environment variables");
+    if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
+        console.warn("Skipping admin seeding: ADMIN_EMAIL or ADMIN_PASSWORD not set.");
+        return;
     }
 
     try {
-        await mongoose.connect(MONGO_URI);
-
         const email = ADMIN_EMAIL.trim().toLowerCase();
-        const password = ADMIN_PASSWORD.trim()
+        const password = ADMIN_PASSWORD.trim();
 
         const existingUser = await User.findOne({ email });
 
         if (existingUser) {
             if (existingUser.role !== "ADMIN") {
                 console.warn(
-                    "This email already belongs to a non-admin user. No changes made."
+                    `Admin seed skipped: ${email} already belongs to a non-admin user.`
                 );
             } else {
-                console.log("Admin account already exists.");
+                console.log("Admin account verified.");
             }
-
             return;
         }
 
-
-
         await User.create({
-            name: process.env.ADMIN_NAME || "Admin",
+            name: (ADMIN_NAME || "Admin").trim(),
             email,
-            password,
+            password, // Assumes your User model's pre('save') hook hashes the password
             role: "ADMIN",
         });
 
         console.log("Admin account created successfully.");
-    } finally {
-        await mongoose.disconnect();
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            console.error("Admin seeding failed:", error.message);
+        } else {
+            console.error("Admin seeding failed:", error);
+        }
     }
 };
-
-seedAdmin().catch((error) => {
-    console.error("Admin seeding failed:", error);
-    process.exitCode = 1;
-});
