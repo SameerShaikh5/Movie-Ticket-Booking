@@ -1,10 +1,11 @@
 import mongoose from "mongoose";
 export const connectDB = async () => {
     try {
-        const uri = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/TicketBooking?retryWrites=false";
-        // Force append if it's missing from your env string
-        const finalUri = uri.includes("retryWrites=") ? uri : `${uri}?retryWrites=false`;
-        const conn = await mongoose.connect(finalUri);
+        const uri = process.env.MONGO_URI;
+        if (!uri) {
+            throw new Error("Mongo db uri not configured.");
+        }
+        const conn = await mongoose.connect(uri);
         console.log(`MongoDB Connected: ${conn.connection.host}`);
     }
     catch (error) {

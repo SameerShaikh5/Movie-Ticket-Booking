@@ -9,6 +9,7 @@ import { screenRoutes } from "./routes/screen.routes.js";
 import { bookingRoutes } from "./routes/booking.routes.js";
 import cors from "cors";
 import { analyticsRoutes } from "./routes/analytics.routes.js";
+import helmet from "helmet";
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -17,8 +18,10 @@ connectDB();
 // redis connection
 app.use(cookieParser());
 app.use(express.json());
+app.use(helmet());
 app.use(cors({
-    origin: 'http://localhost:5173', // Exact frontend URL (no trailing slash)
+    origin: process.env.FRONTEND_URL,
+    // Exact frontend URL (no trailing slash)
     credentials: true, // Required for cookies to be accepted by browser
 }));
 app.get("/", (req, res) => {

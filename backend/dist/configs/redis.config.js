@@ -8,11 +8,15 @@ export const redis = new Redis({
     port: port,
     host: process.env.REDIS_HOST,
     username: process.env.REDIS_USERNAME,
-    password: process.env.REDIS_PASSWORD
+    password: process.env.REDIS_PASSWORD,
+    retryStrategy(times) {
+        const delay = Math.min(times * 50, 2000);
+        return delay;
+    }
 });
 redis.on("connect", () => {
-    console.log("Redis connected.");
+    console.log("Redis connected successfully.");
 });
 redis.on("error", (error) => {
-    console.error("Redis error:", error);
+    console.error("Redis error encountered:", error.message);
 });
