@@ -1,0 +1,14 @@
+import express from "express";
+import { allUserBookings, bookingDetailsById, cancelBooking, cancelIncompleteBooking, createBooking, verifyPayment } from "../controllers/booking.controller.js";
+import { auth } from "../middlewares/auth.middleware.js";
+import { validation } from "../middlewares/validation.middleware.js";
+import { CreateBookingSchema, VerifyPaymentSchema } from "../zodSchema/booking.schema.js";
+const router = express.Router();
+router.use(auth(["USER", "ADMIN"]));
+router.patch("/cancel/:bookingId", cancelBooking);
+router.post('/verify-payment', auth(["USER", "ADMIN"]), validation(VerifyPaymentSchema), verifyPayment);
+router.post('/', auth(["USER", "ADMIN"]), validation(CreateBookingSchema), createBooking);
+router.get("/:bookingId", bookingDetailsById);
+router.post('/release-seats', auth(['USER', "ADMIN"]), cancelIncompleteBooking);
+router.get("/", allUserBookings);
+export const bookingRoutes = router;

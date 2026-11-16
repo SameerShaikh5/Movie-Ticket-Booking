@@ -1,0 +1,24 @@
+import express from "express"
+import { checkLogin, loginUser, logoutUser, registerUser, updateUser, userProfile } from "../controllers/user.controller.js"
+import { validation } from "../middlewares/validation.middleware.js"
+import { loginSchema, registerSchema } from "../zodSchema/user.schema.js"
+import { auth } from "../middlewares/auth.middleware.js"
+
+
+const router = express.Router()
+
+router.post('/register', validation(registerSchema), registerUser)
+
+router.post('/login', validation(loginSchema), loginUser)
+
+router.post('/profile', auth(["USER", "ADMIN"]), updateUser)
+
+router.get('/profile', auth(["USER", "ADMIN"]), userProfile)
+
+router.get('/auth/me', auth(["USER", "ADMIN"]), checkLogin)
+
+router.post('/logout', auth(["USER","ADMIN"]), logoutUser)
+
+
+
+export const userRoutes = router

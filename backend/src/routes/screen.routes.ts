@@ -1,0 +1,24 @@
+import express from "express"
+import { createScreen, deleteScreen, getAllScreens, getScreen, updateScreen } from "../controllers/screen.controller.js"
+import { auth } from "../middlewares/auth.middleware.js"
+import { validation } from "../middlewares/validation.middleware.js"
+import { ScreenSchema } from "../zodSchema/screen.schema.js"
+
+
+const router = express.Router()
+
+router.use(auth(['ADMIN']))
+
+router.get('/', getAllScreens)
+
+router.get('/:screenId', getScreen)
+
+router.post('/', validation(ScreenSchema), createScreen)
+
+router.patch('/:screenId', validation(ScreenSchema), updateScreen)
+
+router.delete('/:screenId', deleteScreen)
+
+
+
+export const screenRoutes = router
