@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { User } from "../models/user.model.js";
 export const seedAdmin = async () => {
     const { ADMIN_EMAIL, ADMIN_PASSWORD, ADMIN_NAME } = process.env;
@@ -6,6 +7,8 @@ export const seedAdmin = async () => {
         return;
     }
     try {
+        // Wait for connectDB() to finish establishing the connection
+        await mongoose.connection.asPromise();
         const email = ADMIN_EMAIL.trim().toLowerCase();
         const password = ADMIN_PASSWORD.trim();
         const existingUser = await User.findOne({ email });

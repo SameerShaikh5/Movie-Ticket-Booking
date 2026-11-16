@@ -10,11 +10,14 @@ import { bookingRoutes } from "./routes/booking.routes.js";
 import cors from "cors";
 import { analyticsRoutes } from "./routes/analytics.routes.js";
 import helmet from "helmet";
+import { seedAdmin } from "./seed/admin.seed.js";
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 // database connection
 connectDB();
+// seed admin
+seedAdmin();
 // redis connection
 app.use(cookieParser());
 app.use(express.json());

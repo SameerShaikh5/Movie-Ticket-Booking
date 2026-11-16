@@ -10,6 +10,7 @@ import { bookingRoutes } from "./routes/booking.routes.js";
 import cors from "cors"
 import { analyticsRoutes } from "./routes/analytics.routes.js";
 import helmet from "helmet";
+import { seedAdmin } from "./seed/admin.seed.js";
 
 
 
@@ -21,6 +22,9 @@ const PORT = process.env.PORT || 3000
 
 // database connection
 connectDB()
+
+// seed admin
+seedAdmin()
 
 // redis connection
 
