@@ -4,44 +4,19 @@ import {
 } from 'lucide-react';
 import { getAnalytics } from '../../apis/analytics.api.js';
 
+const INITIAL_ANALYTICS_STATE = {
+  grossRevenue: '₹0',
+  averageOccupancy: '0%',
+  totalTickets: '0 Seats',
+  activeScreens: '0 Screens',
+  topMovies: []
+};
 
 export default function AnalyticsView() {
   const [timeRange, setTimeRange] = useState('all'); // 'today' | 'all'
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [analyticsData, setAnalyticsData] = useState({
-    grossRevenue: '₹0',
-    averageOccupancy: '0%',
-    totalTickets: '0 Seats',
-    activeScreens: '0 Screens',
-    topMovies: []
-  });
-
-  // Fallback mock data if API fails or backend is unreachable during demo
-  const fallbackData = {
-    today: {
-      grossRevenue: '₹1,42,800',
-      averageOccupancy: '85.7%',
-      totalTickets: '310 Seats',
-      activeScreens: '3 Screens',
-      topMovies: [
-        { rank: 1, title: 'Udta Teer', format: 'IMAX 3D', revenue: '₹78,400', occupancy: '94%' },
-        { rank: 2, title: "Namit Malhotra's Ramayana", format: 'IMAX 3D', revenue: '₹42,300', occupancy: '88%' },
-        { rank: 3, title: 'Rajini: The Jailer 2', format: '4DX', revenue: '₹22,100', occupancy: '76%' },
-      ]
-    },
-    all: {
-      grossRevenue: '₹8,45,200',
-      averageOccupancy: '78.4%',
-      totalTickets: '1,840 Seats',
-      activeScreens: '3 Screens',
-      topMovies: [
-        { rank: 1, title: "Namit Malhotra's Ramayana", format: 'IMAX 3D', revenue: '₹3,42,300', occupancy: '91%' },
-        { rank: 2, title: 'Udta Teer', format: 'IMAX 3D', revenue: '₹2,78,400', occupancy: '89%' },
-        { rank: 3, title: 'Rajini: The Jailer 2', format: '4DX', revenue: '₹1,22,100', occupancy: '82%' },
-      ]
-    }
-  };
+  const [analyticsData, setAnalyticsData] = useState(INITIAL_ANALYTICS_STATE);
 
   useEffect(() => {
     const fetchAnalyticsData = async () => {
@@ -50,12 +25,17 @@ export default function AnalyticsView() {
       try {
         const response = await getAnalytics(timeRange);
         if (response && response.success) {
-          setAnalyticsData(response.data);
+          setAnalyticsData({
+            ...INITIAL_ANALYTICS_STATE,
+            ...response.data
+          });
+        } else {
+          setAnalyticsData(INITIAL_ANALYTICS_STATE);
         }
       } catch (err) {
-        console.warn('API fetch failed, falling back to mock data:', err);
-        setError('Could not connect to backend server. Displaying cached demo data.');
-        setAnalyticsData(fallbackData[timeRange]);
+        console.error('Failed to fetch analytics:', err);
+        setError(err?.response?.data?.message || err.message || 'Could not load analytics data from server.');
+        setAnalyticsData(INITIAL_ANALYTICS_STATE);
       } finally {
         setLoading(false);
       }
@@ -95,10 +75,10 @@ export default function AnalyticsView() {
         </div>
       </div>
 
-      {/* Error / Fallback Banner Notice */}
+      {/* Error Notice */}
       {error && (
-        <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-xl text-xs font-medium flex items-center gap-2">
-          <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+        <div className="bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-xl text-xs font-medium flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
           <span>{error}</span>
         </div>
       )}
@@ -140,7 +120,7 @@ export default function AnalyticsView() {
             <span className="text-xs font-semibold text-slate-400">Total Tickets Booked</span>
             <h3 className="text-2xl font-black text-slate-900">{analyticsData.totalTickets}</h3>
             <span className="text-[10px] font-bold text-slate-500">
-              VIP Recliners: <strong className="text-amber-600">32%</strong>
+              Confirmed seat reservations
             </span>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold shrink-0">
@@ -154,7 +134,7 @@ export default function AnalyticsView() {
             <span className="text-xs font-semibold text-slate-400">Auditorium Status</span>
             <h3 className="text-2xl font-black text-slate-900">{analyticsData.activeScreens}</h3>
             <span className="text-[10px] font-bold text-emerald-600 flex items-center gap-0.5">
-              <ShieldCheck className="w-3 h-3" /> Fully Operational
+              <ShieldCheck className="w-3 h-3" /> Active screens
             </span>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold shrink-0">

@@ -35,19 +35,41 @@ export default function ShowtimesView() {
       setIsLoading(true);
       setErrorMessage('');
 
-      const [screenRes, showRes] = await Promise.all([
+      // Use allSettled so one empty endpoint doesn't crash the other
+      const [screenResult, showResult] = await Promise.allSettled([
         getScreens(),
-        getShows()
+        getShows(),
       ]);
 
-      const fetchedScreens = screenRes.data?.screens || screenRes.screens || screenRes.data || [];
-      setScreensList(Array.isArray(fetchedScreens) ? fetchedScreens : []);
+      // 1. Handle Screens
+      if (screenResult.status === 'fulfilled') {
+        const res = screenResult.value;
+        const fetchedScreens = res?.data?.screens || res?.screens || res?.data || [];
+        setScreensList(Array.isArray(fetchedScreens) ? fetchedScreens : []);
+      } else {
+        const err = screenResult.reason;
+        // If 404 (no screens created yet), treat as empty list instead of error
+        if (err?.response?.status === 404) {
+          setScreensList([]);
+        } else {
+          setErrorMessage(err?.response?.data?.message || err.message || 'Failed to load screens.');
+        }
+      }
 
-      const fetchedShows = showRes.data?.shows || showRes.shows || showRes.data?.data || showRes || [];
-      setSchedules(Array.isArray(fetchedShows) ? fetchedShows : []);
-
-    } catch (err) {
-      setErrorMessage(err.message || 'Failed to load scheduling data.');
+      // 2. Handle Shows
+      if (showResult.status === 'fulfilled') {
+        const res = showResult.value;
+        const fetchedShows = res?.data?.shows || res?.shows || res?.data?.data || res || [];
+        setSchedules(Array.isArray(fetchedShows) ? fetchedShows : []);
+      } else {
+        const err = showResult.reason;
+        // If 404 (no shows scheduled yet), treat as empty list instead of error
+        if (err?.response?.status === 404) {
+          setSchedules([]);
+        } else {
+          setErrorMessage(err?.response?.data?.message || err.message || 'Failed to load shows.');
+        }
+      }
     } finally {
       setIsLoading(false);
     }
